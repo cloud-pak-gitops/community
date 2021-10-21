@@ -44,17 +44,6 @@ kind create cluster --config cluster.yaml --name argocd
 The output of the above command can be as follows:
 
 ```console
-root@gyliu-dev21:~/kind# kind delete cluster --name argocd
-Deleting cluster "argocd" ...
-root@gyliu-dev21:~/kind# vim cluster.yaml
-root@gyliu-dev21:~/kind# cat cluster.yaml
-kind: Cluster
-apiVersion: kind.x-k8s.io/v1alpha4
-nodes:
-- role: control-plane
-  extraPortMappings:
-  - containerPort: 31923
-    hostPort: 8080
 root@gyliu-dev21:~/kind# kind create cluster --config cluster.yaml --name argocd
 Creating cluster "argocd" ...
  ✓ Ensuring node image (kindest/node:v1.21.1) 🖼
