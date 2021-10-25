@@ -4,14 +4,18 @@
 
 - [GitOps Quick Start with Kubernetes KIND Cluster](#gitops-quick-start-with-kubernetes-kind-cluster)
   - [Create a KIND Cluster](#create-a-kind-cluster)
-  - [Install argocd](#install-argocd)
-  - [Download argocd CLI](#download-argocd-cli)
+  - [Install Argo CD](#install-argo-cd)
+  - [Download Argo CD CLI](#download-argo-cd-cli)
   - [Enable NodePort for Argo CD server](#enable-nodeport-for-argo-cd-server)
   - [Access The Argo CD API Server](#access-the-argo-cd-api-server)
     - [Get Argo CD password](#get-argo-cd-password)
     - [Access via CLI](#access-via-cli)
     - [Access via UI](#access-via-ui)
   - [Deploy a Sample App](#deploy-a-sample-app)
+  - [Install Crossplane (Optional)](#install-crossplane-optional)
+    - [Install Helm 3](#install-helm-3)
+    - [Install Crossplane](#install-crossplane)
+    - [Verify Crossplane Install](#verify-crossplane-install)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -74,16 +78,16 @@ NAME                   STATUS   ROLES                  AGE     VERSION
 argocd-control-plane   Ready    control-plane,master   4m28s   v1.21.1
 ```
 
-## Install argocd
+## Install Argo CD
 
-Checkout [argocd quickstart](https://argo-cd.readthedocs.io/en/stable/getting_started/) to get more detail, here we will show some key steps to help you go through the tutorial here.
+Checkout [Argo CD quickstart](https://argo-cd.readthedocs.io/en/stable/getting_started/) to get more detail, here we will show some key steps to help you go through the tutorial here.
 
 ```
 kubectl create namespace argocd
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 ```
 
-## Download argocd CLI
+## Download Argo CD CLI
 
 The tutorial here was running on Linux amd64, so the CLI that I used is as follows:
 
@@ -167,5 +171,58 @@ Input username `admin` and password, you will be able to login to Argo CD UI.
 
 Refer to [Create An Application From A Git Repository](https://argo-cd.readthedocs.io/en/stable/getting_started/#6-create-an-application-from-a-git-repository) to deploy your sample GitOps Apps, good luck!
 
+## Install Crossplane (Optional)
 
+If you are using [Crossplane](https://crossplane.io/) providers for GitOps, you may want to install Crossplane in the Kubernetes KIND Cluster as well.
 
+Check [ Self-Hosted Crossplane Install](https://crossplane.io/docs/v1.4/getting-started/install-configure.html) for some detail guidance, the following are some simple commands which can help install Crossplane quickly in your Kubernetes KIND Cluster.
+
+Use `Helm 3` to install the `latest` official stable release of Crossplane, suitable for community use and testing
+
+### Install Helm 3
+
+```
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+chmod 700 get_helm.sh
+./get_helm.sh
+```
+
+### Install Crossplane
+```
+kubectl create namespace crossplane-system
+
+helm repo add crossplane-stable https://charts.crossplane.io/stable
+helm repo update
+
+helm install crossplane --namespace crossplane-system crossplane-stable/crossplane
+```
+
+### Verify Crossplane Install
+
+```
+helm list -n crossplane-system
+
+kubectl get all -n crossplane-system
+```
+
+The output of above two commands in my cluster is as follows:
+
+```console
+root@gyliu-dev21:~# helm list -n crossplane-system
+NAME      	NAMESPACE        	REVISION	UPDATED                                	STATUS  	CHART           	APP VERSION
+crossplane	crossplane-system	1       	2021-10-25 00:54:58.859431594 -0700 PDT	deployed	crossplane-1.4.1	1.4.1
+```
+```console
+root@gyliu-dev21:~# kubectl get all -n crossplane-system
+NAME                                          READY   STATUS    RESTARTS   AGE
+pod/crossplane-6f974db97-sqrst                1/1     Running   0          39m
+pod/crossplane-rbac-manager-dd8d65f77-sgkj9   1/1     Running   0          39m
+
+NAME                                      READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/crossplane                1/1     1            1           39m
+deployment.apps/crossplane-rbac-manager   1/1     1            1           39m
+
+NAME                                                DESIRED   CURRENT   READY   AGE
+replicaset.apps/crossplane-6f974db97                1         1         1       39m
+replicaset.apps/crossplane-rbac-manager-dd8d65f77   1         1         1       39m
+```
