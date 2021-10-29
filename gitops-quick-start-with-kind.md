@@ -153,12 +153,12 @@ argocd login <ARGOCD_SERVER>
 For the tutorial here, we can use the CLI:
 
 ```console
-root@gyliu-dev21:~# argocd login 9.30.45.46:8081
+root@gyliu-dev21:~# argocd login 9.30.45.46:8080
 WARNING: server certificate had error: x509: cannot validate certificate for 9.30.45.46 because it doesn't contain any IP SANs. Proceed insecurely (y/n)? y
 Username: admin
 Password:
 'admin:login' logged in successfully
-Context '9.30.45.46:8081' updated
+Context '9.30.45.46:8080' updated
 ```
 
 ### Access via UI
