@@ -13,3 +13,6 @@ TBD
 
 ## Reference
 - [Virtual Machines as Code with OpenShift GitOps and OpenShift Virtualization](https://cloud.redhat.com/blog/virtual-machines-as-code-with-openshift-gitops-and-openshift-virtualization)
+- [Disaster Recovery with GitOps](https://cloud.redhat.com/blog/disaster-recovery-with-gitops)
+- [Backup and DR in the Age of GitOps](https://containerjournal.com/topics/container-security/backup-and-dr-in-the-age-of-gitops/)
+- [Backup and Disaster Recovery in the Age of GitOps and CI/CD Deployments](https://dzone.com/articles/backup-and-disaster-recovery-in-the-age-of-gitops)
