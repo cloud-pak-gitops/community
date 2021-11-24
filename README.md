@@ -17,3 +17,4 @@ TBD
 - [Backup and DR in the Age of GitOps](https://containerjournal.com/topics/container-security/backup-and-dr-in-the-age-of-gitops/)
 - [Backup and Disaster Recovery in the Age of GitOps and CI/CD Deployments](https://dzone.com/articles/backup-and-disaster-recovery-in-the-age-of-gitops)
 - [GITOPS – INCLUDING BACKUP IN YOUR CONTINUOUS DEPLOYMENTS](https://vzilla.co.uk/vzilla-blog/gitops-including-backup-in-your-continuous-deployments)
+- [Setting up file-based backup for Kubernetes using Velero and Stash](https://kubevious.io/blog/post/setting-up-file-based-backup-for-kubernetes-using-velero-and-stash)
