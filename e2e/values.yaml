@@ -1,0 +1,19 @@
+---
+###################################
+# CP4WAIOps - Common Configs
+###################################
+spec:
+  fyreUsername: ""
+  fyreAccessKey: ""
+  site: svl
+  productGroupId: 332
+  ocpVersion: 4.8.13
+  quickBurn:
+    enabled: false
+    timeToLive: 36
+    size: large
+  worker:
+    count: 6
+    cpu: 16
+    memory: 32
+    additionalDisk: [300]

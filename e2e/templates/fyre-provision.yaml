@@ -1,0 +1,104 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: fyre-provision
+spec:
+  template:
+    spec:
+      containers:
+        - name: config
+          image: registry.access.redhat.com/ubi8/ubi
+          imagePullPolicy: IfNotPresent
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "150m"
+            limits:
+              memory: "64Mi"
+              cpu: "200m"
+          command:
+            - /bin/sh
+            - -c
+            - |
+
+              set -eo pipefail
+              set -x
+
+              echo y | yum install jq >/dev/null  2>&1 
+
+              fyreUsername={{.Values.spec.fyreUsername}}
+              fyreAccessKey={{.Values.spec.fyreAccessKey}}
+
+              if [[ {{.Values.spec.quickBurn.enabled}} == true ]]; then
+                  cat > new_cluster_config <<-EOF
+                  {
+                  "site":"{{.Values.spec.site}}",
+                  "product_group_id":"{{.Values.spec.productGroupId}}",
+                  "ocp_version": "{{.Values.spec.ocpVersion}}",
+                  "quota_type": "quick_burn",
+                  "time_to_live": "{{.Values.spec.quickBurn.timeToLive}}",
+                  "size":"{{.Values.spec.quickBurn.size}}"
+                  }
+              EOF
+              else
+                  cat > new_cluster_config <<-EOF
+                  {
+                  "site":"{{.Values.spec.site}}",
+                  "product_group_id":"{{.Values.spec.productGroupId}}",
+                  "ocp_version": "{{.Values.spec.ocpVersion}}",
+                  "worker":  [
+                         {
+                            "count": "{{.Values.spec.worker.count}}",
+                            "cpu": "{{.Values.spec.worker.cpu}}",
+                            "memory": "{{.Values.spec.worker.memory}}",
+                            "additional_disk": {{.Values.spec.worker.additionalDisk}}
+                         }
+                   ]
+                  }
+              EOF
+              fi
+
+              NEW_CLUSTER_CONFIG_JSON="new_cluster_config"
+
+              result=$(curl -k -d @$NEW_CLUSTER_CONFIG_JSON -H 'Content-Type: application/json' -u "$fyreUsername:$fyreAccessKey" -X POST https://ocpapi.svl.ibm.com/v1/ocp/) 
+            
+              status=$(echo "$result" | jq -r '.status')
+              details=$(echo "$result" | jq -r '.details')
+              request_id=$(echo "$result" | jq -r '.request_id')
+              if [[ $status == "success" ]]; then
+                echo "The cluster creation was successfull"
+                echo "$INFO details:$details"
+                cluster_name=$(echo "$result" | jq -r '.cluster_name')
+                echo "$INFO Your request id for new cluster creation is: $request_id"
+                echo "$INFO Please save this request_id, which you can use later to check the status."
+                echo "$INFO Your cluster_name is $cluster_name"
+              elif [[($status == "error") && ($details == "failed authentication")]]; then
+                echo "$ERROR The '-u fyre-username' and the '-p fyre-accesskey' provided as input are not correct, Authentication failed."
+                echo "$ERROR Please provide the correct authentication credentials and try again."
+                exit 1
+              else
+                echo "$ERROR There was some error in creating the cluster."
+                echo "$ERROR Status: $status"
+                echo "$ERROR Details: $details"
+                exit 1
+              fi
+      
+              echo "$INFO Checking the status for requestID=$request_id"
+              echo "$INFO Result from the server for the given requestID"
+              
+              while : ; do
+
+                result=$(curl -k -u "$fyreUsername:$fyreAccessKey" -X GET https://ocpapi.svl.ibm.com/v1/ocp/request/$request_id)
+                completion_percent=$(echo "$result" | jq -r '.request.completion_percent')
+                if [[ $completion_percent != 100 ]]; then
+                  echo "wait cluster to be ready...."
+                  sleep 60s
+                else
+                  break
+                fi
+
+              done
+
+    
+      restartPolicy: Never
+  backoffLimit: 2
